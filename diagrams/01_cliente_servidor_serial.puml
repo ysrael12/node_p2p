@@ -1,0 +1,25 @@
+@startuml 01_cliente_servidor_serial
+title Arquitetura 1: Cliente-Servidor Serial (1 download por vez)
+
+skinparam rectangle {
+  BackgroundColor<<server>> #FFD966
+  BackgroundColor<<client>> #9FC5E8
+  BorderColor black
+}
+
+rectangle "SERVIDOR\n(fila única,\n1 conexão ativa)" as S <<server>>
+
+rectangle "Cliente 1\n(download ativo)" as C1 <<client>>
+rectangle "Cliente 2\n(aguardando)" as C2 <<client>>
+rectangle "Cliente 3\n(aguardando)" as C3 <<client>>
+
+S -down-> C1 : envia arquivo\n(t = 0s a 10s)
+C2 .down.> S : na fila
+C3 .down.> S : na fila
+
+note bottom of S
+  Atende 1 por vez.
+  Tempo total = N clientes × tempo individual
+end note
+
+@enduml

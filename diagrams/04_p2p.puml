@@ -1,0 +1,28 @@
+@startuml 04_p2p
+title Arquitetura 4: P2P (seed distribui, peers repassam)
+
+skinparam rectangle {
+  BackgroundColor<<seed>> #FFD966
+  BackgroundColor<<peer>> #93C47D
+  BorderColor black
+}
+
+rectangle "Peer A\n(seed inicial,\ntem arquivo completo)" as A <<seed>>
+rectangle "Peer B\n(baixa de A)" as B <<peer>>
+rectangle "Peer C\n(baixa de A e B)" as C <<peer>>
+rectangle "Peer D\n(baixa de A, B e C)" as D <<peer>>
+
+A -right-> B : chunks 1..N/2
+A -down-> C : chunks N/2..N
+B -right-> C : chunks 1..N/2
+A -down-> D : chunks
+B -down-> D : chunks
+C -left-> D : chunks
+
+note bottom
+  Sem gargalo único: todo peer que já
+  tem pedaços também faz upload.
+  Throughput cresce com nº de peers.
+end note
+
+@enduml

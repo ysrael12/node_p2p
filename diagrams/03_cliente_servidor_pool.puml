@@ -1,0 +1,33 @@
+@startuml 03_cliente_servidor_pool
+title Arquitetura 3: Cliente-Servidor com Pool de Threads (N=2)
+
+skinparam rectangle {
+  BackgroundColor<<server>> #FFD966
+  BackgroundColor<<thread>> #D9D2E9
+  BackgroundColor<<client>> #9FC5E8
+  BackgroundColor<<wait>> #EFEFEF
+  BorderColor black
+}
+
+rectangle "SERVIDOR\nPool fixo: N = 2 threads" as S <<server>> {
+  rectangle "Thread 1\n(reutilizável)" as T1 <<thread>>
+  rectangle "Thread 2\n(reutilizável)" as T2 <<thread>>
+}
+
+rectangle "Cliente 1\n(onda 1)" as C1 <<client>>
+rectangle "Cliente 2\n(onda 1)" as C2 <<client>>
+rectangle "Cliente 3\n(onda 2 - fila)" as C3 <<wait>>
+rectangle "Cliente 4\n(onda 2 - fila)" as C4 <<wait>>
+
+T1 -down-> C1 : onda 1
+T2 -down-> C2 : onda 1
+C3 .down.> T1 : espera liberar
+C4 .down.> T2 : espera liberar
+
+note bottom of S
+  N threads fixos; excesso de clientes
+  espera em fila até thread liberar.
+  Tempo total = ceil(clientes / N) × tempo individual
+end note
+
+@enduml

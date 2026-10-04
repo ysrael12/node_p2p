@@ -1,0 +1,31 @@
+@startuml 02_cliente_servidor_threads
+title Arquitetura 2: Cliente-Servidor com Threads (1 thread por cliente)
+
+skinparam rectangle {
+  BackgroundColor<<server>> #FFD966
+  BackgroundColor<<thread>> #D9D2E9
+  BackgroundColor<<client>> #9FC5E8
+  BorderColor black
+}
+
+rectangle "SERVIDOR" as S <<server>> {
+  rectangle "Thread 1" as T1 <<thread>>
+  rectangle "Thread 2" as T2 <<thread>>
+  rectangle "Thread 3" as T3 <<thread>>
+}
+
+rectangle "Cliente 1" as C1 <<client>>
+rectangle "Cliente 2" as C2 <<client>>
+rectangle "Cliente 3" as C3 <<client>>
+
+T1 -down-> C1 : envia (paralelo)
+T2 -down-> C2 : envia (paralelo)
+T3 -down-> C3 : envia (paralelo)
+
+note bottom of S
+  Todas as threads rodam ao mesmo tempo.
+  Tempo total ≈ tempo de 1 download
+  (limitado pela banda do servidor)
+end note
+
+@enduml
