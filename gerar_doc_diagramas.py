@@ -160,5 +160,82 @@ doc.add_paragraph(
     "com reduce puro (sem lib), imprime tabela no console."
 )
 
+# --- Registro do Processo de Implementação ---
+doc.add_page_break()
+doc.add_heading("Registro do Processo de Implementação", level=0)
+doc.add_paragraph(
+    "Ordem real de desenvolvimento, com as decisões técnicas tomadas a partir de testes "
+    "práticos (não suposições). Cada módulo foi escrito, compilado (tsc --noEmit) e testado "
+    "de ponta a ponta antes de seguir para o próximo."
+)
+
+doc.add_heading("1. Módulos comuns", level=1)
+doc.add_paragraph(
+    "gerarArquivo.ts (buffer aleatório em memória via crypto.randomBytes) e csv.ts "
+    "(append de resultado) implementados e testados primeiro, por serem usados por "
+    "todas as arquiteturas.", style="List Bullet"
+)
+
+doc.add_heading("2. Arquitetura Serial", level=1)
+doc.add_paragraph(
+    "Primeira versão usou servidor.maxConnections = 1. Teste prático revelou que essa opção "
+    "RECUSA a conexão excedente (destroy imediato, sem erro explícito) em vez de enfileirar — "
+    "o cliente 2 seria desconectado sem receber dado, incompatível com medir \"tempo até o "
+    "fim do download\". Confirmado via teste isolado com net.createConnection antes de decidir.",
+    style="List Bullet"
+)
+doc.add_paragraph(
+    "Solução adotada: fila manual (array de sockets) com flag ocupado. socket.end(buffer, "
+    "callback) — o callback só dispara quando o envio termina de fato, garantindo atendimento "
+    "verdadeiramente serial. Testado com 2 clientes reais: segundo cliente só recebeu dado "
+    "após o primeiro terminar.", style="List Bullet"
+)
+
+doc.add_heading("3. Arquitetura Concorrente", level=1)
+doc.add_paragraph(
+    "Mesma base do serial, sem fila e sem limite — o event loop do Node já atende todas as "
+    "conexões em paralelo nativamente. Testado com 2 clientes: ambos terminaram quase juntos "
+    "(tempos próximos), confirmando paralelismo real (diferente do serial).", style="List Bullet"
+)
+
+doc.add_heading("4. Arquitetura Pool (N)", level=1)
+doc.add_paragraph(
+    "Combina fila (serial) com paralelismo limitado (concorrente): contador de conexões "
+    "ativas (semáforo simples) em vez de flag booleana. Com N = 2, testado com 3 clientes "
+    "simultâneos (teste dedicado com delay artificial no servidor): os 2 primeiros foram "
+    "atendidos em paralelo, o 3º esperou uma vaga liberar antes de começar — comportamento "
+    "de pool confirmado na prática, não apenas por leitura do código.", style="List Bullet"
+)
+
+doc.add_heading("5. Arquitetura P2P", level=1)
+doc.add_paragraph(
+    "Antes de escrever código, a API real da lib webtorrent foi inspecionada "
+    "(README, index.d.ts de @types/webtorrent, código-fonte de index.js) em vez de assumida. "
+    "Descoberta de um problema de compatibilidade real: webtorrent 3.x é um pacote ESM puro "
+    "(\"type\": \"module\"), enquanto o projeto é CommonJS — import direto falhava com "
+    "ERR_PACKAGE_PATH_NOT_EXPORTED ao rodar via tsx.", style="List Bullet"
+)
+doc.add_paragraph(
+    "Solução adotada: dynamic import (await import(\"webtorrent\")) isolado dentro das "
+    "funções async de seed.ts e peer.ts, em vez de migrar o projeto inteiro para ESM. "
+    "Resolve a incompatibilidade sem afetar os módulos common/serial/concorrente/pool, que "
+    "continuam em CommonJS com require(). Confirmado com teste exploratório (seed + 2 peers "
+    "locais) antes de integrar à medição de tempo e ao CSV.", style="List Bullet"
+)
+
+doc.add_heading("6. Script de Agregação", level=1)
+doc.add_paragraph(
+    "agregar.ts testado com CSV sintético de valores conhecidos (ex.: 100 e 200 → média "
+    "esperada 150) antes de ser usado nos dados reais dos experimentos, confirmando o "
+    "agrupamento por arquitetura+tamanho e o cálculo de min/média/máx.", style="List Bullet"
+)
+
+doc.add_heading("Controle de versão", level=1)
+doc.add_paragraph(
+    "Projeto versionado em Git com commits separados por módulo/decisão (setup, cada "
+    "arquitetura, dependência webtorrent, script de agregação), preservando o histórico "
+    "do processo de construção."
+)
+
 doc.save(OUT)
 print(f"Salvo: {OUT}")
