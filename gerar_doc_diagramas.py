@@ -237,5 +237,74 @@ doc.add_paragraph(
     "do processo de construção."
 )
 
+# --- Resultados dos Experimentos ---
+doc.add_page_break()
+doc.add_heading("Resultados dos Experimentos", level=0)
+doc.add_paragraph(
+    "Execução real das 4 arquiteturas, 3 tamanhos de arquivo (5, 50, 500 MB), 2 clientes "
+    "por experimento, em localhost. Tempo medido no cliente: do connect/add até o fim do "
+    "download. Valores em milissegundos (ms)."
+)
+
+resultados = [
+    ("serial", 5, 25, 29.5, 34),
+    ("serial", 50, 320, 346.0, 372),
+    ("serial", 500, 1919, 2078.0, 2237),
+    ("concorrente", 5, 20, 32.5, 45),
+    ("concorrente", 50, 169, 182.0, 195),
+    ("concorrente", 500, 1525, 1769.5, 2014),
+    ("pool", 5, 19, 26.0, 33),
+    ("pool", 50, 183, 204.0, 225),
+    ("pool", 500, 1965, 2176.5, 2388),
+    ("p2p", 5, 312, 312.0, 312),
+    ("p2p", 50, 376, 376.5, 377),
+    ("p2p", 500, 1343, 1359.0, 1375),
+]
+
+tabela = doc.add_table(rows=1, cols=5)
+tabela.style = "Light Grid Accent 1"
+hdr = tabela.rows[0].cells
+hdr[0].text = "Arquitetura"
+hdr[1].text = "Tamanho (MB)"
+hdr[2].text = "Min (ms)"
+hdr[3].text = "Média (ms)"
+hdr[4].text = "Máx (ms)"
+
+for arq, mb, minimo, media, maximo in resultados:
+    row = tabela.add_row().cells
+    row[0].text = arq
+    row[1].text = str(mb)
+    row[2].text = str(minimo)
+    row[3].text = str(media)
+    row[4].text = str(maximo)
+
+doc.add_paragraph()
+doc.add_heading("Observações sobre os resultados", level=1)
+doc.add_paragraph(
+    "Com apenas 2 clientes por teste, serial/concorrente/pool apresentam tempos próximos: "
+    "a vantagem do paralelismo (concorrente/pool) sobre o serial só fica evidente com mais "
+    "clientes simultâneos disputando o servidor (com 2 clientes e pool N=2, o pool se comporta "
+    "igual ao concorrente, como esperado e já observado nos testes unitários).", style="List Bullet"
+)
+doc.add_paragraph(
+    "O P2P tem um custo fixo de inicialização (handshake de protocolo, descoberta de peer) que "
+    "domina o tempo em arquivos pequenos (312ms para 5MB, mais lento que as demais arquiteturas "
+    "nesse tamanho). Em arquivos maiores esse custo fixo se dilui: 500MB em P2P (1359ms média) "
+    "foi mais rápido que serial (2078ms) e pool (2176ms), e competitivo com concorrente (1769ms), "
+    "mesmo rodando como dois peers locais sem benefício real de distribuição de carga de upload.",
+    style="List Bullet"
+)
+doc.add_paragraph(
+    "Todos os experimentos rodaram em localhost (mesma máquina), portanto os tempos refletem "
+    "overhead de protocolo e processamento, não latência de rede real.", style="List Bullet"
+)
+
+doc.add_heading("Dados brutos", level=1)
+doc.add_paragraph(
+    "CSV completo (24 linhas: 4 arquiteturas x 3 tamanhos x 2 clientes) disponível em "
+    "p2p_src/resultados_experimento_final.csv, gerado pelo script rodar_experimentos.sh e "
+    "agregado por agregar.ts."
+)
+
 doc.save(OUT)
 print(f"Salvo: {OUT}")
