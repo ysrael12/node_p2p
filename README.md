@@ -1,4 +1,4 @@
-# Atividade 01 — Transferência de Arquivos (Sistemas Distribuídos)
+# Atividade 02 — Transferência de Arquivos (Sistemas Distribuídos)
 
 Comparação de 4 arquiteturas de transferência de arquivo — cliente-servidor
 serial, concorrente, pool de N conexões, e P2P — medindo tempo min/médio/máx
