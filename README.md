@@ -12,74 +12,28 @@ Código-fonte em [`p2p_src/`](p2p_src/) (Node.js + TypeScript). Ver
 Servidor atende **um cliente por vez**; os demais esperam em fila. Tempo
 total cresce linearmente com o número de clientes.
 
-```mermaid
-sequenceDiagram
-    participant C1 as Cliente 1
-    participant C2 as Cliente 2
-    participant S as Servidor (fila manual)
-
-    C1->>S: conecta
-    C2->>S: conecta (entra na fila)
-    S->>C1: envia arquivo completo
-    Note over C2: espera na fila
-    S->>C2: envia arquivo completo (só após C1 terminar)
-```
+![Cliente-Servidor Serial](diagrams/01_cliente_servidor_serial.png)
 
 ## 2. Cliente-Servidor Concorrente
 
 Servidor atende **todos ao mesmo tempo**, sem fila. Em Node.js isso vem
 nativo do event loop assíncrono (sem threads reais).
 
-```mermaid
-sequenceDiagram
-    participant C1 as Cliente 1
-    participant C2 as Cliente 2
-    participant S as Servidor
-
-    C1->>S: conecta
-    C2->>S: conecta
-    par Envio paralelo
-        S->>C1: envia arquivo completo
-    and
-        S->>C2: envia arquivo completo
-    end
-```
+![Cliente-Servidor Concorrente](diagrams/02_cliente_servidor_threads.png)
 
 ## 3. Cliente-Servidor Pool (N)
 
 Servidor mantém **N conexões ativas simultâneas** (semáforo); excedente
 espera em fila até uma vaga liberar.
 
-```mermaid
-sequenceDiagram
-    participant C1 as Cliente 1
-    participant C2 as Cliente 2
-    participant C3 as Cliente 3
-    participant S as Servidor (pool N=2)
-
-    C1->>S: conecta (vaga 1/2)
-    C2->>S: conecta (vaga 2/2)
-    C3->>S: conecta (fila, pool cheio)
-    par Até N em paralelo
-        S->>C1: envia arquivo
-    and
-        S->>C2: envia arquivo
-    end
-    Note over C3: espera vaga liberar
-    S->>C3: envia arquivo (após C1 ou C2 terminar)
-```
+![Cliente-Servidor Pool](diagrams/03_cliente_servidor_pool.png)
 
 ## 4. P2P (webtorrent)
 
 Um peer inicial (seed) distribui pedaços do arquivo; peers que já têm algum
 pedaço também retransmitem para outros.
 
-```mermaid
-graph LR
-    Seed["Seed<br/>(arquivo completo)"] -->|chunks| P1["Peer 1"]
-    Seed -->|chunks| P2["Peer 2"]
-    P1 <-->|chunks| P2
-```
+![P2P](diagrams/04_p2p.png)
 
 ## Resultados (localhost, 2 clientes por teste, tempo médio em ms)
 
