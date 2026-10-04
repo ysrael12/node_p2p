@@ -17,6 +17,9 @@ title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 p = doc.add_paragraph("Atividade 01 - Unidade 2 - Sistemas Distribuídos")
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
+autor = doc.add_paragraph("Ysrael de Jesus Sacramento")
+autor.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
 doc.add_paragraph(
     "Este documento registra os diagramas das quatro arquiteturas avaliadas na atividade: "
     "cliente-servidor serial, cliente-servidor com threads, cliente-servidor com pool de threads "
@@ -40,10 +43,12 @@ itens = [
         "nome": "Cliente-Servidor com Threads",
         "img": "02_cliente_servidor_threads.png",
         "desc": (
-            "O servidor cria uma thread dedicada para cada cliente que se conecta, permitindo que "
-            "todos os downloads ocorram em paralelo. O tempo total se aproxima do tempo de um único "
-            "download, limitado pela largura de banda disponível no servidor. "
-            "Desvantagem: consumo de memória cresce com o número de clientes simultâneos."
+            "O servidor atende todos os clientes conectados ao mesmo tempo, sem fila. No modelo "
+            "clássico (Java/Python), isso é implementado com uma thread dedicada por cliente; na "
+            "implementação em Node.js desta atividade (ver seção de Decisões de Implementação) "
+            "o mesmo efeito é obtido nativamente via event loop assíncrono, sem threads reais. "
+            "O tempo total se aproxima do tempo de um único download, limitado pela largura de "
+            "banda disponível no servidor."
         ),
     },
     {
@@ -107,15 +112,19 @@ doc.add_paragraph(
 doc.add_heading("Estrutura do projeto (monorepo)", level=1)
 estrutura = doc.add_paragraph()
 estrutura.add_run(
-    "p2p/\n"
-    "  app/\n"
+    "p2p/                          (raiz do repositorio git)\n"
+    "  p2p_src/                    (codigo-fonte Node + TypeScript)\n"
     "    src/\n"
-    "      common/        gerarArquivo.ts, csv.ts\n"
-    "      serial/         server.ts, client.ts\n"
-    "      concorrente/     server.ts, client.ts   (equivalente a \"threads\")\n"
-    "      pool/            server.ts, client.ts\n"
-    "      p2p/             seed.ts, peer.ts\n"
-    "    resultados.csv"
+    "      common/      gerarArquivo.ts, csv.ts (+ .test.ts de cada um)\n"
+    "      serial/      server.ts, client.ts, fila.test.ts\n"
+    "      concorrente/ server.ts, client.ts   (equivalente a \"threads\")\n"
+    "      pool/        server.ts, client.ts, fila.test.ts\n"
+    "      p2p/         seed.ts, peer.ts, webtorrent.api.test.ts\n"
+    "      agregar.ts\n"
+    "    rodar_experimentos.sh\n"
+    "    resultados.csv / resultados_experimento_final.csv\n"
+    "  diagrams/                   (arquivos .puml e .png)\n"
+    "  DECISOES.md"
 ).font.name = "Consolas"
 
 doc.add_heading("Diferença das 3 variações cliente-servidor em Node", level=1)
@@ -288,10 +297,12 @@ doc.add_paragraph(
 )
 doc.add_paragraph(
     "O P2P tem um custo fixo de inicialização (handshake de protocolo, descoberta de peer) que "
-    "domina o tempo em arquivos pequenos (312ms para 5MB, mais lento que as demais arquiteturas "
-    "nesse tamanho). Em arquivos maiores esse custo fixo se dilui: 500MB em P2P (1359ms média) "
-    "foi mais rápido que serial (2078ms) e pool (2176ms), e competitivo com concorrente (1769ms), "
-    "mesmo rodando como dois peers locais sem benefício real de distribuição de carga de upload.",
+    "domina o tempo em arquivos pequenos: foi a arquitetura mais lenta em 5MB (312ms de média, "
+    "contra 26-33ms das demais). Em arquivos maiores esse custo fixo se dilui e a transferência "
+    "em si passa a dominar: em 500MB o P2P foi a arquitetura MAIS RÁPIDA das quatro (1359ms de "
+    "média), superando concorrente (1769ms), serial (2078ms) e pool (2176ms) — mesmo rodando "
+    "como dois peers locais, sem o benefício real de uma rede com muitos peers distribuindo "
+    "upload entre si.",
     style="List Bullet"
 )
 doc.add_paragraph(
