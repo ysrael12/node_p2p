@@ -2,7 +2,7 @@ import {createConnection} from "net";
 import { salvarResultado} from "../common/csv";
 
 const PORTA = 9001; 
-const TAMANHO_MB = 5; 
+const TAMANHO_MB = Number(process.env.TAMANHO_MB) || 5; 
 const CLIENTE_ID = Number(process.argv[2] || 1); // aqui o id é feito por processo definido pela linha de comando
 
 const inicio = Date.now(); 

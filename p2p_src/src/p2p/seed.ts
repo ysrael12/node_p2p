@@ -1,6 +1,6 @@
 import { gerarArquivo } from "../common/gerarArquivo";
 
-const TAMANHO_MB = 5;
+const TAMANHO_MB = Number(process.env.TAMANHO_MB) || 5;
 
 async function main() {
   const { default: WebTorrent } = await import("webtorrent");

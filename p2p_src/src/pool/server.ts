@@ -2,7 +2,7 @@ import { createServer, Socket } from "net";
 import { gerarArquivo } from "../common/gerarArquivo";
 
 const PORTA = 9003;
-const TAMANHO_MB = 5;
+const TAMANHO_MB = Number(process.env.TAMANHO_MB) || 5;
 const N = 2; // tamanho do pool: max de conexões ativas simultâneas
 
 const fila: Socket[] = [];

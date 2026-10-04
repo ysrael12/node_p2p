@@ -2,7 +2,7 @@ import { salvarResultado } from "../common/csv";
 
 const MAGNET_URI = process.argv[2];
 const CLIENTE_ID = Number(process.argv[3] || 1);
-const TAMANHO_MB = 5;
+const TAMANHO_MB = Number(process.env.TAMANHO_MB) || 5;
 
 if (!MAGNET_URI) {
   console.error("uso: peer.ts <magnetURI> <clienteId>");

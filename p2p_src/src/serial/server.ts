@@ -2,7 +2,7 @@ import { createServer, Socket } from "net";
 import { gerarArquivo } from "../common/gerarArquivo";
 
 const PORTA = 9001;
-const TAMANHO_MB = 5;
+const TAMANHO_MB = Number(process.env.TAMANHO_MB) || 5;
 
 // fila manual: toda conexão entra aqui, mas só 1 é atendida por vez
 const fila: Socket[] = [];
